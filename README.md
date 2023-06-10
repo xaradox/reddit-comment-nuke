@@ -31,5 +31,5 @@ py comments_nuke.py [--save-locally | --restore-comments]
 
 | Flag                | Description                                                             |
 | ------------------- | ----------------------------------------------------------------------- |
-| --save-locally      | Flag to save comments locally (`comments.json`)                         |
+| --save-locally      | Flag to save comments locally (`comments.json`) instead of editing them |
 | --restore-comments  | Flag to restore comments to their original state (Not yet implemented)  |
