@@ -15,6 +15,8 @@ pip install cryptography
 
 ## Usage
 - Create a reddit app ([here](https://www.reddit.com/prefs/apps/))  
+- `description` and `about url` can be left blank
+- `redirect uri` is required (You can use: `http://www.example.com/unused/redirect/uri`)  
   <img src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*7cGAKth1PMrEf2sHcQWPoA.png" width="400"/>
 - Note the client ID (`client_id`) and secret token (`client_secret`)
 - Clone this repository  
