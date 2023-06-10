@@ -1,4 +1,6 @@
+import sys
 import argparse
+import json
 import praw
 import secrets
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -24,15 +26,17 @@ def get_comments(user):
     return user.comments.new(limit=None)
 
 def save_comments(comments):
-    from datetime import utcfromtimestamp
+    from datetime import datetime
 
     with open('comments.json','w',encoding='utf-8') as f_comments:
+        data = []
         for comment in comments:
             comment_dict = {"comment_id" : comment.id,
-                            "date" : utcfromtimestamp(comment.created_utc),
+                            "date" : datetime.utcfromtimestamp(comment.created_utc).strftime('%Y/%m/%d'),
                             "subreddit" : comment.subreddit.display_name,
                             "comment_body" : comment.body}
-            json.dump(comment_dict, f_comments, indent=4)
+            data.append(comment_dict)
+        json.dump(data, f_comments, indent=4, ensure_ascii=False)
 
 def encrypt_text(text, key):
     nonce = secrets.token_bytes(12)
@@ -59,29 +63,29 @@ replace_with = """
 
 &nbsp;  
 Fuck spez. I edited this comment before he could.  
-Encrypted comment ciphertext:  
+Comment ID={} Ciphertext:  
 >!{}!<
 """
 
-def main():
+def main(self):
     # Parse command-line args
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--save-locally',action='store_true',
                         help='Flag to save comments locally')
     group.add_argument('--restore-comments',action='store_true',
-                        help='Optional parameter to restore comments to their original state')
+                        help='Flag to restore comments to their original state')
     args = vars(parser.parse_args())
 
     # Load user credentials
-    with open('credentials.json','r',encoding='utf-8') as f_credentials:
+    with open('config/credentials.json','r',encoding='utf-8') as f_credentials:
         credentials = json.load(f_credentials)
 
     # Generate a secret key if one does not exist
     if credentials['encryption_key'] == "":
-        with open('credentials.json','w',encoding='utf-8') as f_credentials:
-            credentials['encryption_key'] = secrets.token.bytes(32)
-            json.dump(credentials, f_credentials)
+        with open('config/credentials.json','w',encoding='utf-8') as f_credentials:
+            credentials['encryption_key'] = b64encode(secrets.token_bytes(32)).decode()
+            json.dump(credentials, f_credentials, indent=4)
 
     # Users AES-GCM secret key 
     key = credentials['encryption_key']
@@ -109,12 +113,13 @@ def main():
         save_comments(comments)
 
     for comment in comments:
-        # Encrypt the comment body with the user key
-        encrypted_comment = encrypt_text(comment.body.encode(), key)
-        # Fix encoding of comment ciphertext
-        encrypted_comment = b64encode(encrypted_comment).decode()
-        # Edit the comment according to 'replace_with' and insert ciphertext 
-        comment.edit(replace_with.format(encrypted_comment))
+        if ('ID=' + comment.id) not in comment.body:
+            # Encrypt the comment body with the user key
+            encrypted_comment = encrypt_text(comment.body.encode(), key)
+            # Fix encoding of comment ciphertext
+            encrypted_comment = b64encode(encrypted_comment).decode()
+            # Edit the comment according to 'replace_with' and insert ciphertext 
+            comment.edit(replace_with.format(comment.id, encrypted_comment))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
