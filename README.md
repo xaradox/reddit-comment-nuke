@@ -28,6 +28,9 @@ git clone https://github.com/xaradox/reddit-comment-nuke && cd reddit-comment-nu
 ```
 py comments_nuke.py [--save-locally | --restore-comments]
 ```
+# Warning  
+If you want to be able to restore your comments, you MUST run the script with the --save-locally flag FIRST.  
+The functionality to restore from the encrypted comment is not yet implemented, so if you edit your comments without saving them first you will have to wait for that.
 
 | Flag                | Description                                                             |
 | ------------------- | ----------------------------------------------------------------------- |
