@@ -12,6 +12,9 @@ pip install praw
 ```
 pip install cryptography
 ```
+# Warning  
+If you want to be able to restore your comments, you **MUST** run the script with the --save-locally flag *first*.  
+The functionality to restore from the encrypted comment is not yet implemented, so if you edit your comments without saving them first you won't be able to restore them until it is finished.  
 
 ## Usage
 - Create a reddit app ([here](https://www.reddit.com/prefs/apps/))  
@@ -32,4 +35,4 @@ py comments_nuke.py [--save-locally | --restore-comments]
 | Flag                | Description                                                             |
 | ------------------- | ----------------------------------------------------------------------- |
 | --save-locally      | Flag to save comments locally (`comments.json`) instead of editing them |
-| --restore-comments  | Flag to restore comments to their original state (Not yet implemented)  |
+| --restore-comments  | Flag to restore comments to their original state. (Currently only capable of restoring from local saves)|
