@@ -52,14 +52,20 @@ def edit_comments(user, key):
     # Get user comment history
     comments = get_comments(user)
 
+    # Submission ID's to blacklist for edits
+    skip_submission = []
+
     for comment in comments:
-        if ('ID=' + comment.id) not in comment.body:
-            # Encrypt the comment body with the user key
-            encrypted_comment = encrypt_text(comment.body.encode(), key)
-            # Fix encoding of comment ciphertext
-            encrypted_comment = b64encode(encrypted_comment).decode()
-            # Edit the comment according to 'replace_with' and insert ciphertext 
-            comment.edit(replace_with.format(comment.id, encrypted_comment))
+        comment_submission_id = (comment.link_id)[3:] # Remove 't3_' prefix
+        if comment_submission_id not in skip_submission:
+            if ('ID=' + comment.id) not in comment.body:
+                # Encrypt the comment body with the user key
+                encrypted_comment = encrypt_text(comment.body.encode(), key)
+                # Fix encoding of comment ciphertext
+                encrypted_comment = b64encode(encrypted_comment).decode()
+                # Edit the comment according to 'replace_with' and insert ciphertext 
+                replacement = replace_with + append_id_ciphertext.format(comment.id, encrypted_comment)
+                comment.edit(replacement)
 
 # Relevant documentation: 
 # https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM
@@ -71,6 +77,7 @@ def decrypt_text(text, key):
     return AESGCM(key).decrypt(text[:12], text[12:], b"")
 
 # All comments are edited according to this string
+# You are free to change it to whatever you want
 replace_with = """*This comment has been edited in protest to reddit's API policy changes, their treatment of developers of 3rd party apps, and their response to community backlash.*  
   
 &nbsp;  
@@ -87,9 +94,13 @@ replace_with = """*This comment has been edited in protest to reddit's API polic
 
 &nbsp;  
 Fuck spez. I edited this comment before he could.  
-Comment ID={} Ciphertext:  
+"""
+
+# DO NOT EDIT THIS PART
+append_id_ciphertext = """Comment ID={} Ciphertext:  
 >!{}!<
 """
+# DO NOT EDIT THIS PART
 
 def main(self):
     # Parse command-line args
